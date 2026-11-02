@@ -7,7 +7,7 @@ function Player() {
   const [work, setWork] = useState<Work | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    fetch("./work.json")
+    fetch("./work.json", { cache: "no-cache" })
       .then((r) => {
         if (!r.ok) throw Error("缺少 work.json");
         return r.json();

@@ -21,6 +21,24 @@ export default defineConfig(({ command }) => ({
       workbox: {
         clientsClaim: true,
         globPatterns: ["**/*.{js,css,html,svg,json,txt,png,jpg}"],
+        // Story files are fetched network-first so published updates show up
+        // on the next load; the cached copy is only used when offline.
+        globIgnores: [
+          "**/work.json",
+          "**/test-work.json",
+          "**/blank-work.json",
+        ],
+        runtimeCaching: [
+          {
+            urlPattern: /\/(work|test-work|blank-work)\.json(\?.*)?$/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "story-files",
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 5 },
+            },
+          },
+        ],
         maximumFileSizeToCacheInBytes: 4000000,
       },
     }),
