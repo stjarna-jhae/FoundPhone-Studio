@@ -161,6 +161,8 @@ export function compileStory(raw: unknown): { story: Story; work: Work } {
   };
   for (const [app, items] of Object.entries(s.content))
     items.forEach((i, n) => add(app, i, `content.${app}.${n}`));
+  if (s.phone.avatar && !safeMedia(s.phone.avatar))
+    fail("phone.avatar", "无效头像");
   s.contacts.forEach((c, n) => {
     if (c.avatar && !safeMedia(c.avatar))
       fail(`contacts.${n}.avatar`, "无效头像");

@@ -628,3 +628,12 @@
   width: 25px;
   height: 25px;
 }
+.mymy-ui .kzkme {
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+.mymy-ui .kzkme .catalog-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+}

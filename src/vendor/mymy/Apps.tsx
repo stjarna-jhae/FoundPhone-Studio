@@ -256,6 +256,14 @@ export function MymyKakao(p: SkinProps) {
             )}
           </div>
           <div className="kzkb">
+            {tab === "好友" && (
+              <div className="kzkr kzkme" aria-label="我的资料">
+                <Avatar name={p.owner || "机主"} src={p.ownerAvatar} />
+                <span className="kzkn">
+                  <b>{p.owner || "机主"}</b>
+                </span>
+              </div>
+            )}
             <div className="kzksec">
               {tab === "好友" ? "好友" : "全部聊天"} {list.length}
             </div>
