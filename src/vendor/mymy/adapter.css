@@ -637,3 +637,16 @@
   height: 52px;
   border-radius: 18px;
 }
+.mymy-ui .kzday {
+  align-self: center;
+  margin: 10px auto 14px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+  color: #fff;
+  font-size: 12px;
+  width: fit-content;
+}
+.mymy-ui .kzt {
+  white-space: nowrap;
+}

@@ -1,7 +1,7 @@
 /* React/data adapters for dudwo5/Mymy UI templates: kt/ktn/KHD/bub,
  * igHome/igProfile/igDM/igSheet, xHome. See NOTICE.txt for permission.
  * Author content, DOM globals, timers and media dependencies are excluded. */
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Search,
@@ -37,17 +37,31 @@ function grouped(items: Item[]) {
     items: items.filter((i) => i.title === title),
   }));
 }
-export function messageRun(items: Item[], index: number) {
+export function messageRun(items: Item[], index: number, byMinute = false) {
   const m = items[index],
     previous = items[index - 1],
-    next = items[index + 1];
-  return {
-    first:
-      !previous ||
-      previous.outgoing !== m.outgoing ||
-      previous.sender !== m.sender,
-    last: !next || next.outgoing !== m.outgoing || next.sender !== m.sender,
-  };
+    next = items[index + 1],
+    split = (o?: Item) =>
+      !o ||
+      o.outgoing !== m.outgoing ||
+      o.sender !== m.sender ||
+      (byMinute && o.time.slice(-5) !== m.time.slice(-5));
+  return { first: split(previous), last: split(next) };
+}
+/** KakaoTalk-style clock: "上午 1:28" / "下午 2:30". */
+export function kakaoTime(time: string) {
+  const match = /(\d{1,2}):(\d{2})$/.exec(time);
+  if (!match) return time;
+  const h = Number(match[1]);
+  return `${h < 12 ? "上午" : "下午"} ${h % 12 || 12}:${match[2]}`;
+}
+/** KakaoTalk-style date divider: "2026年11月3日 星期二". */
+export function kakaoDate(time: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(time);
+  if (!match) return "";
+  const [, y, mo, d] = match.map(Number);
+  const week = "日一二三四五六"[new Date(y, mo - 1, d).getDay()];
+  return `${y}年${mo}月${d}日 星期${week}`;
 }
 const read = (p: SkinProps, i: Item) =>
   p.creator || i.password ? p.onItem(i) : p.onRead(i.id);
@@ -116,41 +130,46 @@ export function MymyKakao(p: SkinProps) {
           </header>
           <div className="msgs kk" ref={scroll}>
             {messages.map((m, i) => {
-              const run = messageRun(messages, i);
+              const run = messageRun(messages, i, true),
+                day = kakaoDate(m.time),
+                newDay =
+                  !!day && day !== kakaoDate(messages[i - 1]?.time || "");
               return (
-                <div
-                  key={m.id}
-                  className={
-                    "kzm " +
-                    (m.outgoing ? "kzmy" : "kzot") +
-                    (run.first ? " first" : "")
-                  }
-                >
-                  {!m.outgoing && run.first && (
-                    <>
-                      <div className="kzmav">
-                        <Avatar name={m.sender} src={m.avatar} />
-                      </div>
-                      <div className="kzmn">{m.sender}</div>
-                    </>
-                  )}
-                  {m.outgoing && run.last && (
-                    <span className="kzt">
-                      {m.meta.unread || ""}
-                      <br />
-                      {m.time.slice(-5)}
-                    </span>
-                  )}
-                  <button
-                    className={"kzbub" + (m.media ? " kzimg" : "")}
-                    onClick={() => m.meta.local !== "true" && read(p, m)}
+                <Fragment key={m.id}>
+                  {newDay && <div className="kzday">{day}</div>}
+                  <div
+                    className={
+                      "kzm " +
+                      (m.outgoing ? "kzmy" : "kzot") +
+                      (run.first ? " first" : "")
+                    }
                   >
-                    {m.media ? <Media item={m} /> : m.body}
-                  </button>
-                  {!m.outgoing && run.last && (
-                    <span className="kzt">{m.time.slice(-5)}</span>
-                  )}
-                </div>
+                    {!m.outgoing && run.first && (
+                      <>
+                        <div className="kzmav">
+                          <Avatar name={m.sender} src={m.avatar} />
+                        </div>
+                        <div className="kzmn">{m.sender}</div>
+                      </>
+                    )}
+                    {m.outgoing && run.last && (
+                      <span className="kzt">
+                        {m.meta.unread || ""}
+                        <br />
+                        {kakaoTime(m.time)}
+                      </span>
+                    )}
+                    <button
+                      className={"kzbub" + (m.media ? " kzimg" : "")}
+                      onClick={() => m.meta.local !== "true" && read(p, m)}
+                    >
+                      {m.media ? <Media item={m} /> : m.body}
+                    </button>
+                    {!m.outgoing && run.last && (
+                      <span className="kzt">{kakaoTime(m.time)}</span>
+                    )}
+                  </div>
+                </Fragment>
               );
             })}
             {!messages.length && <Blank />}
@@ -270,20 +289,22 @@ export function MymyKakao(p: SkinProps) {
             {list
               .filter((g) => g.title.includes(query.trim()))
               .map((g) => {
-                const last = g.items.at(-1)!;
+                const last = g.items.at(-1)!,
+                  peer =
+                    [...g.items].reverse().find((i) => !i.outgoing) || last;
                 return (
                   <button
                     className="kzkr kzkcr"
                     key={g.title}
                     onClick={() => p.onThread(g.title)}
                   >
-                    <Avatar name={last.sender || g.title} src={last.avatar} />
+                    <Avatar name={peer.sender || g.title} src={peer.avatar} />
                     <span className="kzkn">
                       <b>{g.title}</b>
                       <small>{tab === "好友" ? last.sender : last.body}</small>
                     </span>
                     <span className="kzkmt">
-                      {last.time.slice(-5)}
+                      {kakaoTime(last.time)}
                       {last.meta.unread && (
                         <i className="kzkbd">{last.meta.unread}</i>
                       )}
