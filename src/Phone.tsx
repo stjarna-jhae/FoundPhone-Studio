@@ -309,6 +309,14 @@ function PhoneRuntime({
         (_, i) => i !== index,
       ),
     });
+  const wallpaperSrc = safeMedia(
+      (locked && work.phone.lockWallpaperImage) ||
+        work.phone.wallpaperImage ||
+        "",
+    ),
+    wallpaperStyle: CSSProperties | undefined = wallpaperSrc
+      ? { backgroundImage: `url("${wallpaperSrc}")` }
+      : undefined;
   if (!ready) return <div className="phone-loading">正在恢复进度…</div>;
   return (
     <div
@@ -318,7 +326,8 @@ function PhoneRuntime({
     >
       <KeyboardContext.Provider value={setKeyboard}>
         <div
-          className={`phone-screen wallpaper-${work.phone.wallpaper} ${locked ? "is-locked" : ""} ${app ? "in-app" : ""} ${keyboard ? "keyboard-open" : ""}`}
+          style={wallpaperStyle}
+          className={`phone-screen wallpaper-${work.phone.wallpaper} ${wallpaperStyle ? "wallpaper-image" : ""} ${locked ? "is-locked" : ""} ${app ? "in-app" : ""} ${keyboard ? "keyboard-open" : ""}`}
           data-app={app}
           onDragStart={(e) => e.preventDefault()}
           onPointerDown={(e) => {

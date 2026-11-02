@@ -301,14 +301,16 @@ export function MymyKakao(p: SkinProps) {
                     <Avatar name={peer.sender || g.title} src={peer.avatar} />
                     <span className="kzkn">
                       <b>{g.title}</b>
-                      <small>{tab === "好友" ? last.sender : last.body}</small>
+                      {tab !== "好友" && <small>{last.body}</small>}
                     </span>
-                    <span className="kzkmt">
-                      {kakaoTime(last.time)}
-                      {last.meta.unread && (
-                        <i className="kzkbd">{last.meta.unread}</i>
-                      )}
-                    </span>
+                    {tab !== "好友" && (
+                      <span className="kzkmt">
+                        {kakaoTime(last.time)}
+                        {last.meta.unread && (
+                          <i className="kzkbd">{last.meta.unread}</i>
+                        )}
+                      </span>
+                    )}
                   </button>
                 );
               })}

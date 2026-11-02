@@ -163,6 +163,9 @@ export function compileStory(raw: unknown): { story: Story; work: Work } {
     items.forEach((i, n) => add(app, i, `content.${app}.${n}`));
   if (s.phone.avatar && !safeMedia(s.phone.avatar))
     fail("phone.avatar", "无效头像");
+  for (const k of ["wallpaperImage", "lockWallpaperImage"] as const)
+    if (s.phone[k] && !safeMedia(s.phone[k]!))
+      fail("phone." + k, "无效壁纸图片");
   s.contacts.forEach((c, n) => {
     if (c.avatar && !safeMedia(c.avatar))
       fail(`contacts.${n}.avatar`, "无效头像");
